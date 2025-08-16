@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Scientific Calculator Pro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .calculator-button {
+            transition: all 0.2s ease;
+            transform: translateY(0);
+        }
+        
+        .calculator-button:active {
+            transform: translateY(2px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .display-text {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 0.05em;
+        }
+        
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            color: #3b82f6;
+        }
+        
+        .history-item {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        .algorithm-step {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-white dark:bg-gray-800 shadow-lg">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-calculator text-3xl text-blue-600 dark:text-blue-400"></i>
+                        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Brijesh Calculator&nbsp;</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button id="themeToggle" class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-moon text-gray-600 dark:text-gray-300"></i>
+                        </button>
+                        <button id="historyToggle" class="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fas fa-history text-gray-600 dark:text-gray-300"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 container mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Calculator Section -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                        <!-- Tabs -->
+                        <div class="flex border-b dark:border-gray-700">
+                            <button class="tab-btn tab-active flex-1 py-3 px-4 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-tab="basic">Basic
+                            </button>
+                            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-tab="scientific">
+                                Scientific
+                            </button>
+                            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-tab="algorithms">
+                                Algorithms
+                            </button>
+                            <button class="tab-btn flex-1 py-3 px-4 text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-tab="converter">
+                                Converter
+                            </button>
+                        </div>
+
+                        <!-- Display -->
+                        <div class="p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+                            <div class="text-right mb-2">
+                                <div id="previousOperation" class="text-sm text-gray-500 dark:text-gray-400 h-6"></div>
+                                <div id="display" class="text-4xl font-bold text-gray-800 dark:text-white display-text">0</div>
+                            </div>
+                            <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                                <span id="memoryIndicator"></span>
+                <span id="angleMode">DEG</span>
+                            </div>
+                        </div>
+
+                        <!-- Basic Calculator -->
+                        <div id="basicTab" class="tab-content p-6">
+                            <div class="grid grid-cols-4 gap-3">
+                                <button class="calculator-button col-span-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-4 rounded-lg" onclick="clearAll()">AC</button>
+                                <button class="calculator-button bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="deleteLast()">⌫</button>
+                                <button class="calculator-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 rounded-lg" onclick="appendOperator('/')">÷</button>
+                                
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendNumber('7')">7</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendNumber('8')">8</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendNumber('9')">9</button>
+                                <button class="calculator-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 rounded-lg" onclick="appendOperator('*')">×</button>
+                                
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendNumber('4')">4</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendNumber('5')">5</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendNumber('6')">6</button>
+                                <button class="calculator-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 rounded-lg" onclick="appendOperator('-')">−</button>
+                                
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendNumber('1')">1</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendNumber('2')">2</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendNumber('3')">3</button>
+                                <button class="calculator-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 rounded-lg" onclick="appendOperator('+')">+</button>
+                                
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="toggleSign()">+/−</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendNumber('0')">0</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-4 rounded-lg" onclick="appendDecimal()">.</button>
+                                <button class="calculator-button bg-green-500 hover:bg-green-600 text-white font-semibold py-4 rounded-lg" onclick="calculate()">=</button>
+                            </div>
+                        </div>
+
+                        <!-- Scientific Calculator -->
+                        <div id="scientificTab" class="tab-content p-6 hidden">
+                            <div class="grid grid-cols-5 gap-2">
+                                <!-- First row -->
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="scientificFunction('sin')">sin</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="scientificFunction('cos')">cos</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="scientificFunction('tan')">tan</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="scientificFunction('log')">log</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="scientificFunction('ln')">ln</button>
+                                
+                                <!-- Second row -->
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="scientificFunction('asin')">asin</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="scientificFunction('acos')">acos</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="scientificFunction('atan')">atan</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="appendConstant('pi')">π</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="appendConstant('e')">e</button>
+                                
+                                <!-- Third row -->
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="appendOperator('^')">x^y</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="scientificFunction('sqrt')">√</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="scientificFunction('fact')">n!</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="appendOperator('(')">(</button>
+                                <button class="calculator-button bg-purple-500 hover:bg-purple-600 text-white text-sm py-3 rounded-lg" onclick="appendOperator(')')">)</button>
+                                
+                                <!-- Basic operations row -->
+                                <button class="calculator-button col-span-2 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg" onclick="clearAll()">AC</button>
+                                <button class="calculator-button bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="deleteLast()">⌫</button>
+                                <button class="calculator-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg" onclick="appendOperator('/')">÷</button>
+                                
+                                <!-- Number rows -->
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendNumber('7')">7</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendNumber('8')">8</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendNumber('9')">9</button>
+                                <button class="calculator-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg" onclick="appendOperator('*')">×</button>
+                                
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendNumber('4')">4</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendNumber('5')">5</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendNumber('6')">6</button>
+                                <button class="calculator-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg" onclick="appendOperator('-')">−</button>
+                                
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendNumber('1')">1</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendNumber('2')">2</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendNumber('3')">3</button>
+                                <button class="calculator-button bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-lg" onclick="appendOperator('+')">+</button>
+                                
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="toggleSign()">+/−</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendNumber('0')">0</button>
+                                <button class="calculator-button bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 font-semibold py-3 rounded-lg" onclick="appendDecimal()">.</button>
+                                <button class="calculator-button bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg" onclick="calculate()">=</button>
+                            </div>
+                        </div>
+
+                        <!-- Algorithms Tab -->
+                        <div id="algorithmsTab" class="tab-content p-6 hidden">
+                            <div class="space-y-4">
+                                <!-- LCM Calculator -->
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                    <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">LCM Calculator</h3>
+                                    <div class="flex space-x-2 mb-3">
+                                        <input type="number" id="lcmInput1" placeholder="Number 1" class="flex-1 px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        <input type="number" id="lcmInput2" placeholder="Number 2" class="flex-1 px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        <button onclick="calculateLCM()" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg">Calculate</button>
+                                    </div>
+                                    <div id="lcmResult" class="text-lg font-semibold text-gray-800 dark:text-white"></div>
+                                    <div id="lcmSteps" class="mt-3 text-sm text-gray-600 dark:text-gray-400"></div>
+                                </div>
+
+                                <!-- GCD/HCM Calculator -->
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                    <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">GCD/HCM Calculator</h3>
+                                    <div class="flex space-x-2 mb-3">
+                                        <input type="number" id="gcdInput1" placeholder="Number 1" class="flex-1 px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        <input type="number" id="gcdInput2" placeholder="Number 2" class="flex-1 px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        <button onclick="calculateGCD()" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg">Calculate</button>
+                                    </div>
+                                    <div id="gcdResult" class="text-lg font-semibold text-gray-800 dark:text-white"></div>
+                                    <div id="gcdSteps" class="mt-3 text-sm text-gray-600 dark:text-gray-400"></div>
+                                </div>
+
+                                <!-- Prime Factorization -->
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                    <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Prime Factorization</h3>
+                                    <div class="flex space-x-2 mb-3">
+                                        <input type="number" id="primeInput" placeholder="Enter number" class="flex-1 px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        <button onclick="factorizeNumber()" class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg">Factorize</button>
+                                    </div>
+                                    <div id="primeResult" class="text-lg font-semibold text-gray-800 dark:text-white"></div>
+                                    <div id="primeSteps" class="mt-3 text-sm text-gray-600 dark:text-gray-400"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Converter Tab -->
+                        <div id="converterTab" class="tab-content p-6 hidden">
+                            <div class="space-y-4">
+                                <!-- Base Converter -->
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                    <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Number Base Converter</h3>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Decimal</label>
+                                            <input type="text" id="decimalInput" oninput="convertFromDecimal()" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Binary</label>
+                                            <input type="text" id="binaryInput" oninput="convertFromBinary()" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Octal</label>
+                                            <input type="text" id="octalInput" oninput="convertFromOctal()" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">Hexadecimal</label>
+                                            <input type="text" id="hexInput" oninput="convertFromHex()" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Unit Converter -->
+                                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                                    <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Unit Converter</h3>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">From</label>
+                                            <select id="fromUnit" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white mb-2">
+                                                <option value="m">Meters</option>
+                                                <option value="km">Kilometers</option>
+                                                <option value="ft">Feet</option>
+                                                <option value="in">Inches</option>
+                                            </select>
+                                            <input type="number" id="fromValue" oninput="convertUnits()" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">To</label>
+                                            <select id="toUnit" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white mb-2">
+                                                <option value="ft">Feet</option>
+                                                <option value="m">Meters</option>
+                                                <option value="km">Kilometers</option>
+                                                <option value="in">Inches</option>
+                                            </select>
+                                            <input type="text" id="toValue" readonly="" class="w-full px-3 py-2 border rounded-lg dark:bg-gray-600 dark:border-gray-500 dark:text-white bg-gray-100 dark:bg-gray-600">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Sidebar -->
+                <div id="historyPanel" class="lg:col-span-1">
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold text-gray-800 dark:text-white">History</h2>
+                            <button onclick="clearHistory()" class="text-sm text-red-500 hover:text-red-600">Clear</button>
+                        </div>
+                        <div id="historyList" class="space-y-2 max-h-96 overflow-y-auto">
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">No calculations yet</p>
+                        </div>
+                        
+                        <!-- Memory Functions -->
+                        <div class="mt-6 pt-6 border-t dark:border-gray-700">
+                            <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">Memory</h3>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="memoryClear()" class="calculator-button bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-sm py-2 rounded-lg">MC</button>
+                                <button onclick="memoryRecall()" class="calculator-button bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-sm py-2 rounded-lg">MR</button>
+                                <button onclick="memoryAdd()" class="calculator-button bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-sm py-2 rounded-lg">M+</button>
+                                <button onclick="memorySubtract()" class="calculator-button bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-sm py-2 rounded-lg">M-</button>
+                            </div>
+                            <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                Memory: <span id="memoryValue">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Calculator state
+        let display = '0';
+        let previousOperation = '';
+        let shouldResetDisplay = false;
+        let memory = 0;
+        let angleMode = 'DEG';
+        let history = [];
+
+        // Theme toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            const icon = themeToggle.querySelector('i');
+            icon.classList.toggle('fa-moon');
+            icon.classList.toggle('fa-sun');
+        });
+
+        // Tab switching
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+                
+                tabBtns.forEach(b => b.classList.remove('tab-active'));
+                tabContents.forEach(c => c.classList.add('hidden'));
+                
+                btn.classList.add('tab-active');
+                document.getElementById(tabName + 'Tab').classList.remove('hidden');
+            });
+        });
+
+        // History toggle
+        const historyToggle = document.getElementById('historyToggle');
+        const historyPanel = document.getElementById('historyPanel');
+        
+        historyToggle.addEventListener('click', () => {
+            historyPanel.classList.toggle('hidden');
+        });
+
+        // Basic calculator functions
+        function updateDisplay() {
+            document.getElementById('display').textContent = display;
+            document.getElementById('previousOperation').textContent = previousOperation;
+        }
+
+        function appendNumber(num) {
+            if (shouldResetDisplay) {
+                display = '0';
+                shouldResetDisplay = false;
+            }
+            if (display === '0') {
+                display = num;
+            } else {
+                display += num;
+            }
+            updateDisplay();
+        }
+
+        function appendDecimal() {
+            if (shouldResetDisplay) {
+                display = '0';
+                shouldResetDisplay = false;
+            }
+            if (!display.includes('.')) {
+                display += '.';
+            }
+            updateDisplay();
+        }
+
+        function appendOperator(op) {
+            if (shouldResetDisplay) {
+                shouldResetDisplay = false;
+            }
+            if (display !== '0' && !['+', '-', '*', '/', '(', ')'].includes(display.slice(-1))) {
+                display += op;
+                updateDisplay();
+            }
+        }
+
+        function clearAll() {
+            display = '0';
+            previousOperation = '';
+            shouldResetDisplay = false;
+            updateDisplay();
+        }
+
+        function deleteLast() {
+            if (display.length > 1) {
+                display = display.slice(0, -1);
+            } else {
+                display = '0';
+            }
+            updateDisplay();
+        }
+
+        function toggleSign() {
+            if (display !== '0') {
+                if (display.startsWith('-')) {
+                    display = display.slice(1);
+                } else {
+                    display = '-' + display;
+                }
+                updateDisplay();
+            }
+        }
+
+        function calculate() {
+            try {
+                const expression = display.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+                const result = eval(expression);
+                previousOperation = display + ' =';
+                display = result.toString();
+                shouldResetDisplay = true;
+                addToHistory(previousOperation + ' ' + display);
+                updateDisplay();
+            } catch (error) {
+                display = 'Error';
+                shouldResetDisplay = true;
+                updateDisplay();
+            }
+        }
+
+        // Scientific functions
+        function scientificFunction(func) {
+            let value = parseFloat(display);
+            let result;
+            
+            switch(func) {
+                case 'sin':
+                    result = Math.sin(angleMode === 'DEG' ? value * Math.PI / 180 : value);
+                    break;
+                case 'cos':
+                    result = Math.cos(angleMode === 'DEG' ? value * Math.PI / 180 : value);
+                    break;
+                case 'tan':
+                    result = Math.tan(angleMode === 'DEG' ? value * Math.PI / 180 : value);
+                    break;
+                case 'asin':
+                    result = Math.asin(value) * (angleMode === 'DEG' ? 180 / Math.PI : 1);
+                    break;
+                case 'acos':
+                    result = Math.acos(value) * (angleMode === 'DEG' ? 180 / Math.PI : 1);
+                    break;
+                case 'atan':
+                    result = Math.atan(value) * (angleMode === 'DEG' ? 180 / Math.PI : 1);
+                    break;
+                case 'log':
+                    result = Math.log10(value);
+                    break;
+                case 'ln':
+                    result = Math.log(value);
+                    break;
+                case 'sqrt':
+                    result = Math.sqrt(value);
+                    break;
+                case 'fact':
+                    result = factorial(value);
+                    break;
+            }
+            
+            previousOperation = `${func}(${display}) =`;
+            display = result.toString();
+            shouldResetDisplay = true;
+            addToHistory(previousOperation + ' ' + display);
+            updateDisplay();
+        }
+
+        function factorial(n) {
+            if (n < 0) return NaN;
+            if (n === 0 || n === 1) return 1;
+            let result = 1;
+            for (let i = 2; i <= n; i++) {
+                result *= i;
+            }
+            return result;
+        }
+
+        function appendConstant(constant) {
+            switch(constant) {
+                case 'pi':
+                    display = Math.PI.toString();
+                    break;
+                case 'e':
+                    display = Math.E.toString();
+                    break;
+            }
+            shouldResetDisplay = true;
+            updateDisplay();
+        }
+
+        // Algorithm functions
+        function calculateLCM() {
+            const num1 = parseInt(document.getElementById('lcmInput1').value);
+            const num2 = parseInt(document.getElementById('lcmInput2').value);
+            
+            if (isNaN(num1) || isNaN(num2)) {
+                document.getElementById('lcmResult').textContent = 'Please enter valid numbers';
+                return;
+            }
+            
+            const gcd = calculateGCDHelper(num1, num2);
+            const lcm = Math.abs(num1 * num2) / gcd;
+            
+            document.getElementById('lcmResult').textContent = `LCM(${num1}, ${num2}) = ${lcm}`;
+            
+            // Show steps
+            let steps = `Steps:\n`;
+            steps += `1. GCD(${num1}, ${num2}) = ${gcd}\n`;
+            steps += `2. LCM = |${num1} × ${num2}| ÷ GCD\n`;
+            steps += `3. LCM = ${Math.abs(num1 * num2)} ÷ ${gcd} = ${lcm}`;
+            
+            document.getElementById('lcmSteps').innerHTML = steps.replace(/\n/g, '<br>');
+        }
+
+        function calculateGCD() {
+            const num1 = parseInt(document.getElementById('gcdInput1').value);
+            const num2 = parseInt(document.getElementById('gcdInput2').value);
+            
+            if (isNaN(num1) || isNaN(num2)) {
+                document.getElementById('gcdResult').textContent = 'Please enter valid numbers';
+                return;
+            }
+            
+            const gcd = calculateGCDHelper(num1, num2);
+            document.getElementById('gcdResult').textContent = `GCD(${num1}, ${num2}) = ${gcd}`;
+            
+            // Show Euclidean algorithm steps
+            let steps = `Euclidean Algorithm Steps:\n`;
+            let a = Math.abs(num1);
+            let b = Math.abs(num2);
+            let step = 1;
+            
+            while (b !== 0) {
+                const remainder = a % b;
+                steps += `${step}. ${a} = ${b} × ${Math.floor(a/b)} + ${remainder}\n`;
+                a = b;
+                b = remainder;
+                step++;
+            }
+            steps += `${step}. GCD = ${a}`;
+            
+            document.getElementById('gcdSteps').innerHTML = steps.replace(/\n/g, '<br>');
+        }
+
+        function calculateGCDHelper(a, b) {
+            a = Math.abs(a);
+            b = Math.abs(b);
+            while (b !== 0) {
+                const temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+
+        function factorizeNumber() {
+            const num = parseInt(document.getElementById('primeInput').value);
+            
+            if (isNaN(num) || num < 2) {
+                document.getElementById('primeResult').textContent = 'Please enter a number ≥ 2';
+                return;
+            }
+            
+            const factors = primeFactorization(num);
+            document.getElementById('primeResult').textContent = `${num} = ${factors.join(' × ')}`;
+            
+            // Show steps
+            let steps = `Prime Factorization Steps:\n`;
+            let n = num;
+            let divisor = 2;
+            let step = 1;
+            
+            while (n > 1) {
+                if (n % divisor === 0) {
+                    steps += `${step}. ${n} ÷ ${divisor} = ${n/divisor}\n`;
+                    n = n / divisor;
+                    step++;
+                } else {
+                    divisor++;
+                }
+            }
+            
+            document.getElementById('primeSteps').innerHTML = steps.replace(/\n/g, '<br>');
+        }
+
+        function primeFactorization(n) {
+            const factors = [];
+            let divisor = 2;
+            
+            while (n > 1) {
+                while (n % divisor === 0) {
+                    factors.push(divisor);
+                    n = n / divisor;
+                }
+                divisor++;
+            }
+            
+            return factors;
+        }
+
+        // Base conversion functions
+        function convertFromDecimal() {
+            const decimal = parseInt(document.getElementById('decimalInput').value);
+            if (!isNaN(decimal)) {
+                document.getElementById('binaryInput').value = decimal.toString(2);
+                document.getElementById('octalInput').value = decimal.toString(8);
+                document.getElementById('hexInput').value = decimal.toString(16).toUpperCase();
+            }
+        }
+
+        function convertFromBinary() {
+            const binary = document.getElementById('binaryInput').value;
+            if (/^[01]+$/.test(binary)) {
+                const decimal = parseInt(binary, 2);
+                document.getElementById('decimalInput').value = decimal;
+                document.getElementById('octalInput').value = decimal.toString(8);
+                document.getElementById('hexInput').value = decimal.toString(16).toUpperCase();
+            }
+        }
+
+        function convertFromOctal() {
+            const octal = document.getElementById('octalInput').value;
+            if (/^[0-7]+$/.test(octal)) {
+                const decimal = parseInt(octal, 8);
+                document.getElementById('decimalInput').value = decimal;
+                document.getElementById('binaryInput').value = decimal.toString(2);
+                document.getElementById('hexInput').value = decimal.toString(16).toUpperCase();
+            }
+        }
+
+        function convertFromHex() {
+            const hex = document.getElementById('hexInput').value;
+            if (/^[0-9A-Fa-f]+$/.test(hex)) {
+                const decimal = parseInt(hex, 16);
+                document.getElementById('decimalInput').value = decimal;
+                document.getElementById('binaryInput').value = decimal.toString(2);
+                document.getElementById('octalInput').value = decimal.toString(8);
+            }
+        }
+
+        // Unit conversion
+        function convertUnits() {
+            const fromValue = parseFloat(documesnt.getElementById('fromValue').value);
+            const fromUnit = document.getElementById('fromUnit').value;
+            const toUnit = document.getElementById('toUnit').value;
+            
+            if (isNaN(fromValue)) {
+                document.getElementById('toValue').value = '';
+                return;
+            }
+            
+            // Convert to meters first
+            let meters;
+            switch(fromUnit) {
+                case 'm': meters = fromValue; break;
+                case 'km': meters = fromValue * 1000; break;
+                case 'ft': meters = fromValue * 0.3048; break;
+                case 'in': meters = fromValue * 0.0254; break;
+            }
+            
+            // Convert from meters to target unit
+            let result;
+            switch(toUnit) {
+                case 'm': result = meters; break;
+                case 'km': result = meters / 1000; break;
+                case 'ft': result = meters / 0.3048; break;
+                case 'in': result = meters / 0.0254; break;
+            }
+            
+            document.getElementById('toValue').value = result.toFixed(6);
+        }
+
+        // Memory functions
+        function memoryClear() {
+            memory = 0;
+            updateMemoryDisplay();
+        }
+
+        function memoryRecall() {
+            display = memory.toString();
+            shouldResetDisplay = true;
+            updateDisplay();
+        }
+
+        function memoryAdd() {
+            memory += parseFloat(display);
+            updateMemoryDisplay();
+        }
+
+        function memorySubtract() {
+            memory -= parseFloat(display);
+            updateMemoryDisplay();
+        }
+
+        function updateMemoryDisplay() {
+            document.getElementById('memoryValue').textContent = memory;
+            document.getElementById('memoryIndicator').textContent = memory !== 0 ? 'M' : '';
+        }
+
+        // History functions
+        function addToHistory(operation) {
+            history.unshift(operation);
+            if (history.length > 20) {
+                history.pop();
+            }
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyList = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-sm">No calculations yet</p>';
+                return;
+            }
+            
+            historyList.innerHTML = history.map((item, index) => `
+                <div class="history-item p-2 bg-gray-50 dark:bg-gray-700 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600" onclick="loadFromHistory('${item}')">
+                    <div class="text-sm text-gray-600 dark:text-gray-400">${item}</div>
+                </div>
+            `).join('');
+        }
+
+        function loadFromHistory(operation) {
+            const result = operation.split(' = ')[1];
+            if (result) {
+                display = result;
+                shouldResetDisplay = true;
+                updateDisplay();
+            }
+        }
+
+        function clearHistory() {
+            history = [];
+            updateHistoryDisplay();
+        }
+
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') {
+                appendNumber(e.key);
+            } else if (e.key === '.') {
+                appendDecimal();
+            } else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/') {
+                appendOperator(e.key);
+            } else if (e.key === 'Enter' || e.key === '=') {
+                calculate();
+            } else if (e.key === 'Escape') {
+                clearAll();
+            } else if (e.key === 'Backspace') {
+                deleteLast();
+            }
+        });
+
+        // Initialize
+        updateDisplay();
+        updateMemoryDisplay();
+    </script>
+
+</body></html>
